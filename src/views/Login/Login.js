@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../../components/Card/Card';
 import Button from 'components/CustomButtons/Button';
 import GridItem from 'components/Grid/GridItem';
@@ -40,6 +40,17 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [wrongCredentialsShow, setWrongCredentialsShow] = useState(false);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    localForage.getItem('userToken').then((data) => {
+      if (data) {
+        window.location = 'admin/dashboard';
+      } else {
+        setShow(true);
+      }
+    });
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -54,6 +65,7 @@ const Login = () => {
     loginApi(userData)
       .then((response) => {
         localForage.setItem('userToken', response.data.token).then(() => {
+          localStorage.setItem('loggedIn', true);
           window.location = 'admin/dashboard';
         });
       })
@@ -77,70 +89,79 @@ const Login = () => {
     );
   };
 
+  const pageForm = () => {
+    return (
+      <>
+        <GridItem xs={12} sm={12} md={8}>
+          <Card>
+            <CardHeader color='primary'>
+              <h4 className={classes.cardTitleWhite}>Login Form</h4>
+            </CardHeader>
+
+            <CardBody>
+              <form onSubmit={(event) => handleSubmit(event)}>
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <TextField
+                      margin='normal'
+                      required
+                      fullWidth
+                      name='email'
+                      label='Email Address'
+                      type='email'
+                      id='email'
+                      pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                      onInput={(event) => setEmail(event.target.value)}
+                    />
+                  </GridItem>
+                </GridContainer>
+
+                <GridContainer>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <TextField
+                      margin='normal'
+                      required
+                      fullWidth
+                      name='password'
+                      label='Password'
+                      type='password'
+                      id='password'
+                      formControlProps={{
+                        fullWidth: true,
+                      }}
+                      onInput={(event) => setPassword(event.target.value)}
+                    />
+
+                    {wrongCredentialsShow && wrongCredentials()}
+                  </GridItem>
+                </GridContainer>
+
+                <GridContainer>
+                  <Grid item xs={12} sm={6}>
+                    <CardFooter>
+                      <GridContainer>
+                        <Button color='primary' type='submit'>
+                          Login
+                        </Button>
+                      </GridContainer>
+                    </CardFooter>
+                  </Grid>
+                </GridContainer>
+              </form>
+            </CardBody>
+          </Card>
+        </GridItem>
+      </>
+    );
+  };
+
   return (
     <>
-      <GridItem xs={12} sm={12} md={8}>
-        <Card>
-          <CardHeader color='primary'>
-            <h4 className={classes.cardTitleWhite}>Login Form</h4>
-          </CardHeader>
-
-          <CardBody>
-            <form onSubmit={(event) => handleSubmit(event)}>
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={12}>
-                  <TextField
-                    margin='normal'
-                    required
-                    fullWidth
-                    name='email'
-                    label='Email Address'
-                    type='email'
-                    id='email'
-                    pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    onInput={(event) => setEmail(event.target.value)}
-                  />
-                </GridItem>
-              </GridContainer>
-
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={12}>
-                  <TextField
-                    margin='normal'
-                    required
-                    fullWidth
-                    name='password'
-                    label='Password'
-                    type='password'
-                    id='password'
-                    formControlProps={{
-                      fullWidth: true,
-                    }}
-                    onInput={(event) => setPassword(event.target.value)}
-                  />
-                </GridItem>
-              </GridContainer>
-
-              <GridContainer>
-                {wrongCredentialsShow && wrongCredentials()}
-
-                <Grid item xs={12} sm={6}>
-                  <CardFooter>
-                    <GridContainer>
-                      <Button color='primary' type='submit'>
-                        Login
-                      </Button>
-                    </GridContainer>
-                  </CardFooter>
-                </Grid>
-              </GridContainer>
-            </form>
-          </CardBody>
-        </Card>
-      </GridItem>
+      {show && pageForm()}
+      {!show && <h1>Loading...</h1>}
     </>
   );
 };

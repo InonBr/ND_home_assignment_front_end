@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames';
 // @material-ui/core components
 import { makeStyles } from '@material-ui/core/styles';
@@ -18,6 +18,7 @@ import Search from '@material-ui/icons/Search';
 // core components
 import CustomInput from 'components/CustomInput/CustomInput.js';
 import Button from 'components/CustomButtons/Button.js';
+import localForage from 'localforage';
 
 import styles from 'assets/jss/material-dashboard-react/components/headerLinksStyle.js';
 
@@ -27,6 +28,16 @@ export default function AdminNavbarLinks() {
   const classes = useStyles();
   const [openNotification, setOpenNotification] = React.useState(null);
   const [openProfile, setOpenProfile] = React.useState(null);
+  const [showLogout, setShowLogout] = useState(false);
+
+  useEffect(() => {
+    localForage.getItem('userToken').then((data) => {
+      if (data) {
+        setShowLogout(true);
+      }
+    });
+  }, []);
+
   const handleClickNotification = (event) => {
     if (openNotification && openNotification.contains(event.target)) {
       setOpenNotification(null);
@@ -34,9 +45,11 @@ export default function AdminNavbarLinks() {
       setOpenNotification(event.currentTarget);
     }
   };
+
   const handleCloseNotification = () => {
     setOpenNotification(null);
   };
+
   const handleClickProfile = (event) => {
     if (openProfile && openProfile.contains(event.target)) {
       setOpenProfile(null);
@@ -44,9 +57,32 @@ export default function AdminNavbarLinks() {
       setOpenProfile(event.currentTarget);
     }
   };
+
   const handleCloseProfile = () => {
     setOpenProfile(null);
   };
+
+  const handleLogOut = (event) => {
+    localForage.removeItem('userToken').then(() => {
+      localStorage.removeItem('loggedIn');
+      window.location = '/dashboard';
+    });
+  };
+
+  const logOutButton = () => {
+    return (
+      <>
+        <Divider light />
+        <MenuItem
+          onClick={(event) => handleLogOut(event)}
+          className={classes.dropdownItem}
+        >
+          Logout
+        </MenuItem>
+      </>
+    );
+  };
+
   return (
     <div>
       <div className={classes.searchWrapper}>
@@ -194,18 +230,6 @@ export default function AdminNavbarLinks() {
                 <ClickAwayListener onClickAway={handleCloseProfile}>
                   <MenuList role='menu'>
                     <MenuItem
-                      onClick={() => (window.location = '/register')}
-                      className={classes.dropdownItem}
-                    >
-                      Register
-                    </MenuItem>
-                    <MenuItem
-                      onClick={handleCloseProfile}
-                      className={classes.dropdownItem}
-                    >
-                      Login
-                    </MenuItem>
-                    <MenuItem
                       onClick={handleCloseProfile}
                       className={classes.dropdownItem}
                     >
@@ -217,13 +241,7 @@ export default function AdminNavbarLinks() {
                     >
                       Settings
                     </MenuItem>
-                    <Divider light />
-                    <MenuItem
-                      onClick={handleCloseProfile}
-                      className={classes.dropdownItem}
-                    >
-                      Logout
-                    </MenuItem>
+                    {showLogout && logOutButton()}
                   </MenuList>
                 </ClickAwayListener>
               </Paper>
