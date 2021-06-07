@@ -11,6 +11,8 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { loginApi } from '../../lib/api';
 import localForage from 'localforage';
+import { useSelector, useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 
 import Grid from '@material-ui/core/Grid';
 
@@ -41,16 +43,17 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [wrongCredentialsShow, setWrongCredentialsShow] = useState(false);
   const [show, setShow] = useState(false);
+  const state = useSelector((state) => state);
+  const history = useHistory();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    localForage.getItem('userToken').then((data) => {
-      if (data) {
-        window.location = 'admin/dashboard';
-      } else {
-        setShow(true);
-      }
-    });
-  }, []);
+    if (state.logedin) {
+      history.push('admin/dashboard');
+    } else {
+      setShow(true);
+    }
+  }, [state.logedin, history]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -64,9 +67,11 @@ const Login = () => {
 
     loginApi(userData)
       .then((response) => {
-        localForage.setItem('userToken', response.data.token).then(() => {
-          localStorage.setItem('loggedIn', true);
-          window.location = 'admin/dashboard';
+        const userToken = 'userToken';
+
+        localForage.setItem(userToken, response.data.token).then(() => {
+          dispatch({ type: 'login' });
+          history.push('admin/dashboard');
         });
       })
       .catch((err) => {

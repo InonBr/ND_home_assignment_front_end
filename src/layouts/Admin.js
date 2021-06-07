@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Switch, Route, Redirect } from 'react-router-dom';
 // creates a beautiful scrollbar
 import PerfectScrollbar from 'perfect-scrollbar';
@@ -18,29 +18,37 @@ import styles from 'assets/jss/material-dashboard-react/layouts/adminStyle.js';
 import bgImage from 'assets/img/sidebar-2.jpg';
 import logo from 'assets/img/reactlogo.png';
 
+import { useSelector, useDispatch } from 'react-redux';
+import localForage from 'localforage';
+
 let ps;
 
-const switchRoutes = (
-  <Switch>
-    {routes.map((prop, key) => {
-      if (prop.layout === '/admin') {
-        return (
-          <Route
-            path={prop.layout + prop.path}
-            component={prop.component}
-            key={key}
-          />
-        );
-      }
-      return null;
-    })}
-    <Redirect from='/admin' to='/admin/dashboard' />
-  </Switch>
-);
+const switchRoutes = () => {
+  return (
+    <Switch>
+      {routes.map((prop, key) => {
+        if (prop.layout === '/admin') {
+          return (
+            <Route
+              path={prop.layout + prop.path}
+              component={prop.component}
+              key={key}
+            />
+          );
+        }
+        return null;
+      })}
+      <Redirect from='/admin' to='/admin/dashboard' />
+    </Switch>
+  );
+};
 
 const useStyles = makeStyles(styles);
 
 export default function Admin({ ...rest }) {
+  const state = useSelector((state) => state);
+  const dispatch = useDispatch();
+
   // styles
   const classes = useStyles();
   // ref to help us initialize PerfectScrollbar on windows devices
@@ -50,12 +58,30 @@ export default function Admin({ ...rest }) {
   const [color, setColor] = React.useState('blue');
   const [fixedClasses, setFixedClasses] = React.useState('dropdown show');
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [showPage, setShowPage] = useState(false);
+
+  useEffect(() => {
+    const userToken = 'userToken';
+
+    localForage.getItem(userToken).then((data) => {
+      if (data) {
+        dispatch({ type: 'login' });
+        setShowPage(true);
+      } else {
+        dispatch({ type: 'logout' });
+        setShowPage(true);
+      }
+    });
+  }, [dispatch, state.logedin]);
+
   const handleImageClick = (image) => {
     setImage(image);
   };
+
   const handleColorClick = (color) => {
     setColor(color);
   };
+
   const handleFixedClick = () => {
     if (fixedClasses === 'dropdown') {
       setFixedClasses('dropdown show');
@@ -92,42 +118,52 @@ export default function Admin({ ...rest }) {
       window.removeEventListener('resize', resizeFunction);
     };
   }, [mainPanel]);
-  return (
-    <div className={classes.wrapper}>
-      <Sidebar
-        routes={routes}
-        logoText={'Creative Tim'}
-        logo={logo}
-        image={image}
-        handleDrawerToggle={handleDrawerToggle}
-        open={mobileOpen}
-        color={color}
-        {...rest}
-      />
-      <div className={classes.mainPanel} ref={mainPanel}>
-        <Navbar
+
+  const pageData = () => {
+    return (
+      <div className={classes.wrapper}>
+        <Sidebar
           routes={routes}
+          logoText={'Creative Tim'}
+          logo={logo}
+          image={image}
           handleDrawerToggle={handleDrawerToggle}
+          open={mobileOpen}
+          color={color}
           {...rest}
         />
-        {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
-        {getRoute() ? (
-          <div className={classes.content}>
-            <div className={classes.container}>{switchRoutes}</div>
-          </div>
-        ) : (
-          <div className={classes.map}>{switchRoutes}</div>
-        )}
-        {getRoute() ? <Footer /> : null}
-        <FixedPlugin
-          handleImageClick={handleImageClick}
-          handleColorClick={handleColorClick}
-          bgColor={color}
-          bgImage={image}
-          handleFixedClick={handleFixedClick}
-          fixedClasses={fixedClasses}
-        />
+        <div className={classes.mainPanel} ref={mainPanel}>
+          <Navbar
+            routes={routes}
+            handleDrawerToggle={handleDrawerToggle}
+            {...rest}
+          />
+          {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
+          {getRoute() ? (
+            <div className={classes.content}>
+              <div className={classes.container}>{switchRoutes()}</div>
+            </div>
+          ) : (
+            <div className={classes.map}>{switchRoutes()}</div>
+          )}
+          {getRoute() ? <Footer /> : null}
+          <FixedPlugin
+            handleImageClick={handleImageClick}
+            handleColorClick={handleColorClick}
+            bgColor={color}
+            bgImage={image}
+            handleFixedClick={handleFixedClick}
+            fixedClasses={fixedClasses}
+          />
+        </div>
       </div>
-    </div>
+    );
+  };
+
+  return (
+    <>
+      {showPage && pageData()}
+      {!showPage && <h1>Loading...</h1>}
+    </>
   );
 }

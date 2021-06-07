@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import classNames from 'classnames';
 // @material-ui/core components
 import { makeStyles } from '@material-ui/core/styles';
@@ -19,6 +19,8 @@ import Search from '@material-ui/icons/Search';
 import CustomInput from 'components/CustomInput/CustomInput.js';
 import Button from 'components/CustomButtons/Button.js';
 import localForage from 'localforage';
+import { useHistory } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 import styles from 'assets/jss/material-dashboard-react/components/headerLinksStyle.js';
 
@@ -26,17 +28,11 @@ const useStyles = makeStyles(styles);
 
 export default function AdminNavbarLinks() {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const [openNotification, setOpenNotification] = React.useState(null);
   const [openProfile, setOpenProfile] = React.useState(null);
-  const [showLogout, setShowLogout] = useState(false);
-
-  useEffect(() => {
-    localForage.getItem('userToken').then((data) => {
-      if (data) {
-        setShowLogout(true);
-      }
-    });
-  }, []);
+  const history = useHistory();
+  const state = useSelector((state) => state);
 
   const handleClickNotification = (event) => {
     if (openNotification && openNotification.contains(event.target)) {
@@ -63,9 +59,11 @@ export default function AdminNavbarLinks() {
   };
 
   const handleLogOut = (event) => {
-    localForage.removeItem('userToken').then(() => {
-      localStorage.removeItem('loggedIn');
-      window.location = '/dashboard';
+    const userToken = 'userToken';
+
+    localForage.removeItem(userToken).then(() => {
+      dispatch({ type: 'logout' });
+      history.push('admin/dashboard');
     });
   };
 
@@ -241,7 +239,7 @@ export default function AdminNavbarLinks() {
                     >
                       Settings
                     </MenuItem>
-                    {showLogout && logOutButton()}
+                    {state.logedin && logOutButton()}
                   </MenuList>
                 </ClickAwayListener>
               </Paper>

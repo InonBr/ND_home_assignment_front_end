@@ -16,10 +16,12 @@ import AdminNavbarLinks from 'components/Navbars/AdminNavbarLinks.js';
 import RTLNavbarLinks from 'components/Navbars/RTLNavbarLinks.js';
 
 import styles from 'assets/jss/material-dashboard-react/components/sidebarStyle.js';
+import { useSelector } from 'react-redux';
 
 const useStyles = makeStyles(styles);
 
 export default function Sidebar(props) {
+  const state = useSelector((state) => state);
   const classes = useStyles();
   // verifies if routeName is the one active (in browser input)
   function activeRoute(routeName) {
@@ -29,6 +31,18 @@ export default function Sidebar(props) {
   var links = (
     <List className={classes.list}>
       {routes.map((prop, key) => {
+        if (state.logedin && prop.name === 'Register') {
+          return null;
+        }
+
+        if (state.logedin && prop.name === 'Login') {
+          return null;
+        }
+
+        if (!state.logedin && prop.name === 'User Profile') {
+          return null;
+        }
+
         var activePro = ' ';
         var listItemClasses;
         if (prop.path === '/upgrade-to-pro') {

@@ -40,18 +40,6 @@ import InsertEmoticon from '@material-ui/icons/InsertEmoticon';
 import AccessibilityNewIcon from '@material-ui/icons/AccessibilityNew';
 import Login from 'views/Login/Login';
 
-const userLoggedIn = () => {
-  const userConnected = localStorage.getItem('loggedIn');
-
-  if (userConnected) {
-    return true;
-  }
-
-  return false;
-};
-
-const filterRegister = userLoggedIn();
-
 let dashboardRoutes = [
   {
     path: '/register',
@@ -142,19 +130,5 @@ let dashboardRoutes = [
     layout: '/admin',
   },
 ];
-
-if (filterRegister) {
-  dashboardRoutes = dashboardRoutes.filter((obj) => {
-    if (obj.name === 'Register' || obj.name === 'Login') {
-      return null;
-    }
-
-    return obj;
-  });
-} else {
-  dashboardRoutes = dashboardRoutes.filter((obj) => {
-    return obj.name !== 'User Profile';
-  });
-}
 
 export default dashboardRoutes;
