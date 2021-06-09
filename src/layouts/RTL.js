@@ -69,14 +69,16 @@ export default function RTL({ ...rest }) {
   const getRoute = () => {
     return window.location.pathname !== '/admin/maps';
   };
+
   const resizeFunction = () => {
     if (window.innerWidth >= 960) {
       setMobileOpen(false);
     }
   };
+
   // initialize and destroy the PerfectScrollbar plugin
   React.useEffect(() => {
-    if (navigator.platform.indexOf('Win') > -1) {
+    if (navigator.platform.indexOf('window') > -1) {
       ps = new PerfectScrollbar(mainPanel.current, {
         suppressScrollX: true,
         suppressScrollY: false,
@@ -86,12 +88,13 @@ export default function RTL({ ...rest }) {
     window.addEventListener('resize', resizeFunction);
     // Specify how to clean up after this effect:
     return function cleanup() {
-      if (navigator.platform.indexOf('Win') > -1) {
+      if (navigator.platform.indexOf('window') > -1) {
         ps.destroy();
       }
       window.removeEventListener('resize', resizeFunction);
     };
   }, [mainPanel]);
+
   return (
     <div className={classes.wrapper}>
       <Sidebar

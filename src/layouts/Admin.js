@@ -3,6 +3,7 @@ import { Switch, Route, Redirect } from 'react-router-dom';
 // creates a beautiful scrollbar
 import PerfectScrollbar from 'perfect-scrollbar';
 import 'perfect-scrollbar/css/perfect-scrollbar.css';
+
 // @material-ui/core components
 import { makeStyles } from '@material-ui/core/styles';
 // core components
@@ -89,20 +90,24 @@ export default function Admin({ ...rest }) {
       setFixedClasses('dropdown');
     }
   };
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
   const getRoute = () => {
     return window.location.pathname !== '/admin/maps';
   };
+
   const resizeFunction = () => {
     if (window.innerWidth >= 960) {
       setMobileOpen(false);
     }
   };
+
   // initialize and destroy the PerfectScrollbar plugin
   React.useEffect(() => {
-    if (navigator.platform.indexOf('Win') > -1) {
+    if (navigator.platform.indexOf('window') > -1) {
       ps = new PerfectScrollbar(mainPanel.current, {
         suppressScrollX: true,
         suppressScrollY: false,
@@ -112,7 +117,7 @@ export default function Admin({ ...rest }) {
     window.addEventListener('resize', resizeFunction);
     // Specify how to clean up after this effect:
     return function cleanup() {
-      if (navigator.platform.indexOf('Win') > -1) {
+      if (navigator.platform.indexOf('window') > -1) {
         ps.destroy();
       }
       window.removeEventListener('resize', resizeFunction);
